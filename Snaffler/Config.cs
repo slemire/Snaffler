@@ -4,7 +4,10 @@ using NLog;
 using SnaffCore.Concurrency;
 using SnaffCore.Config;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Text.RegularExpressions;
 
 namespace Snaffler
 {
@@ -147,15 +150,56 @@ namespace Snaffler
                 if (compTargetArg.Parsed)
                 {
                     string[] compTargets = null;
+                    List<string> compTargetsList = new List<string>();
+
                     if (compTargetArg.Value.Contains(","))
-                    {
-                        compTargets = compTargetArg.Value.Split(',');
-                        
+                    {                        
+                        string[] compTargetsUnprocessed = compTargetArg.Value.Split(',');
+                        foreach (string compTarget in compTargetsUnprocessed)
+                        {
+                            // match cidr notation
+                            string cidr = @"/\d{1,3}$";
+                            Regex r = new Regex(cidr, RegexOptions.IgnoreCase);
+                            Match m = r.Match(compTarget);
+                            if (m.Success)
+                            {
+                                IPNetwork ipn = IPNetwork.Parse(compTarget);
+                                IPAddressCollection ips = IPNetwork.ListIPAddress(ipn);                                
+                                foreach (IPAddress ip in ips)
+                                {
+                                    compTargetsList.Add(ip.ToString());                                    
+                                }
+                                compTargets = compTargetsList.ToArray();
+                            }
+                            else
+                            {
+                                compTargetsList.Add(compTarget);
+                            }
+                        }
+                        compTargets = compTargetsList.ToArray();                        
                     }
                     else
                     {
-                        compTargets = new string[] { compTargetArg.Value };
-                    }
+                        // match cidr notation
+                        string cidr = @"/\d{1,3}$";
+                        Regex r = new Regex(cidr, RegexOptions.IgnoreCase);
+                        Match m = r.Match(compTargetArg.Value);
+                        if (m.Success)
+                        {
+                            IPNetwork ipn = IPNetwork.Parse(compTargetArg.Value);
+                            IPAddressCollection ips = IPNetwork.ListIPAddress(ipn);
+                            compTargetsList = new List<string>();
+                            foreach (IPAddress ip in ips)
+                            {
+                                compTargetsList.Add(ip.ToString());                                
+                            }
+                            compTargets = compTargetsList.ToArray();
+                        }
+                        else
+                        {
+                            compTargets = new string[] { compTargetArg.Value };
+                        }                        
+                    }                    
                     parsedConfig.ComputerTargets = compTargets;
                 }
 

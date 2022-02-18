@@ -75,6 +75,9 @@
     <Compile Include="SnaffCon.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="IPNetwork2">
+      <Version>2.5.386</Version>
+    </PackageReference>
     <PackageReference Include="Nett.Coma">
       <Version>0.15.0</Version>
     </PackageReference>
