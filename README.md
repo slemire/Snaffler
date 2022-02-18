@@ -56,6 +56,8 @@ The key incantations are:
 
 `-c`   Domain controller to query for the list of domain computers.
 
+`-n`   List of IP hostnames/IPs to scan. Supports CIDR notation (192.168.0.0/24).
+
 `-r`   The maximum size file (in bytes) to search inside for interesting strings. Defaults to 500k.
 
 `-j`   How many bytes of context either side of found strings in files to show, e.g. `-j 200`
